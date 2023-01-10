@@ -1,0 +1,23 @@
+syntax = "proto3";
+package celestiaappdemo.swap.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+
+option go_package = "celestia-app-demo/x/swap/types";
+
+// Msg defines the tokefactory module's gRPC message service.
+service Msg {
+  rpc CreatePair(MsgCreatePair) returns (MsgCreateaPairResponse);
+}
+
+message MsgCreatePair{
+    string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+    string token0 = 2 [ (gogoproto.moretags) = "yaml:\"token0\"" ];
+    string token1 = 3 [ (gogoproto.moretags) = "yaml:\"token1\"" ];
+}
+
+message MsgCreateaPairResponse {
+    string new_lp_token = 1 [ (gogoproto.moretags) = "yaml:\"new_lp_token\"" ];
+}

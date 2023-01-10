@@ -1,0 +1,11 @@
+syntax = "proto3";
+package celestiaappdemo.swap.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "celestia-app-demo/x/swap/types";
+
+// Params defines the parameters for the swap module.
+message Params {
+}

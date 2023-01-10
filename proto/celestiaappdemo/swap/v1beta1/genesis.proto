@@ -1,0 +1,10 @@
+syntax = "proto3";
+package celestiaappdemo.swap.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "celestia-app-demo/x/swap/types";
+
+// GenesisState defines the swap module's genesis state.
+message GenesisState {
+}
