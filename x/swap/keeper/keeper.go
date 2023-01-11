@@ -60,17 +60,17 @@ func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 
 func (k Keeper) GetNextPairId(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
-	nextPoolId := gogotypes.UInt64Value{}
+	nextPairId := gogotypes.UInt64Value{}
 
-	b := store.Get(types.KeyNextGlobalPoolId)
+	b := store.Get(types.KeyNextGlobalPairId)
 	if b == nil {
-		panic(fmt.Errorf("getting at key (%v) should not have been nil", types.KeyNextGlobalPoolId))
+		panic(fmt.Errorf("getting at key (%v) should not have been nil", types.KeyNextGlobalPairId))
 	}
-	if err := proto.Unmarshal(b, &nextPoolId); err != nil {
+	if err := proto.Unmarshal(b, &nextPairId); err != nil {
 		panic(err)
 	}
 
-	return nextPoolId.Value
+	return nextPairId.Value
 }
 
 func (k Keeper) SetNextPairId(ctx sdk.Context, poolId uint64) {
@@ -80,5 +80,58 @@ func (k Keeper) SetNextPairId(ctx sdk.Context, poolId uint64) {
 		panic(err)
 	}
 
-	store.Set(types.KeyNextGlobalPoolId, bz)
+	store.Set(types.KeyNextGlobalPairId, bz)
+}
+
+func (k Keeper) SetTokensToPoolId(ctx sdk.Context, token0 string, token1 string, poolId uint64) {
+	prefix := types.GetKeyPrefixTokensToPoolId(token0, token1)
+
+	store := ctx.KVStore(k.storeKey)
+	bz, err := proto.Marshal(&gogotypes.UInt64Value{Value: poolId})
+	if err != nil {
+		panic(err)
+	}
+
+	store.Set(prefix, bz)
+}
+
+func (k Keeper) GetPoolIdFromTokens(ctx sdk.Context, token0 string, token1 string) (uint64, error) {
+	store := ctx.KVStore(k.storeKey)
+	prefix := types.GetKeyPrefixTokensToPoolId(token0, token1)
+
+	bz := store.Get(prefix)
+	pairId := gogotypes.UInt64Value{}
+
+	if len(bz) == 0 {
+		return 0, types.ErrPairNotExist
+	}
+
+	if err := proto.Unmarshal(bz, &pairId); err != nil {
+		return 0, err
+	}
+	return pairId.Value, nil
+}
+
+func (k Keeper) SetIdToPairs(ctx sdk.Context, pairId uint64, pair *types.Pair) {
+	bz, err := k.cdc.Marshal(pair)
+	if err != nil {
+		panic(err)
+	}
+	store := ctx.KVStore(k.storeKey)
+
+	pairKey := types.GetKeyPrefixPairs(pairId)
+	store.Set(pairKey, bz)
+}
+
+func (k Keeper) GetPairFromId(ctx sdk.Context, pairId uint64) *types.Pair {
+	store := ctx.KVStore(k.storeKey)
+
+	pairKey := types.GetKeyPrefixPairs(pairId)
+	bz := store.Get(pairKey)
+
+	pair := types.Pair{}
+	if err := proto.Unmarshal(bz, &pair); err != nil {
+		panic(err)
+	}
+	return &pair
 }

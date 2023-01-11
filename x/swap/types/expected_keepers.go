@@ -11,6 +11,7 @@ type BankKeeper interface {
 	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData banktypes.Metadata)
 
+	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 	HasSupply(ctx sdk.Context, denom string) bool
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 
@@ -21,7 +22,7 @@ type BankKeeper interface {
 
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
-	// GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
 
 type AccountKeeper interface {

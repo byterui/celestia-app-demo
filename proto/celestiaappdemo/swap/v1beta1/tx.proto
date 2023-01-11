@@ -10,6 +10,10 @@ option go_package = "celestia-app-demo/x/swap/types";
 // Msg defines the tokefactory module's gRPC message service.
 service Msg {
   rpc CreatePair(MsgCreatePair) returns (MsgCreateaPairResponse);
+
+  rpc AddLiquidity(MsgAddLiquidity) returns (MsgAddLiquidityResponse);
+
+  rpc SwapExactTokensForTokens(MsgSwapExactTokensForTokens) returns (MsgSwapExactTokensForTokensResponse);
 }
 
 message MsgCreatePair{
@@ -21,3 +25,73 @@ message MsgCreatePair{
 message MsgCreateaPairResponse {
     string new_lp_token = 1 [ (gogoproto.moretags) = "yaml:\"new_lp_token\"" ];
 }
+
+message MsgAddLiquidity{
+    string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+    
+    cosmos.base.v1beta1.Coin token0 = 2       
+        [(gogoproto.nullable) = false, 
+        (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+    
+    cosmos.base.v1beta1.Coin token1 = 3       
+        [(gogoproto.nullable) = false, 
+        (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+    
+    string amount0_min = 4 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false];
+
+    string amount1_min = 5 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false];
+
+    uint64 deadline = 6;
+}
+
+message MsgAddLiquidityResponse{
+  string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+  
+  cosmos.base.v1beta1.Coin token0 = 2       
+      [(gogoproto.nullable) = false, 
+      (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+  
+  cosmos.base.v1beta1.Coin token1 = 3       
+      [(gogoproto.nullable) = false, 
+      (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+
+  cosmos.base.v1beta1.Coin lp_token = 4       
+    [(gogoproto.nullable) = false, 
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+}
+
+message MsgSwapExactTokensForTokens{
+  string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+    
+  string amount_in = 2 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false];
+
+  string amount_out_min = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false];
+      
+  repeated string path = 4 [ (gogoproto.moretags) = "yaml:\"path\"" ];
+
+  string recipient = 5 [ (gogoproto.moretags) = "yaml:\"recipient\"" ];  
+
+  uint64 deadline = 6;
+}
+
+message MsgSwapExactTokensForTokensResponse{
+  string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+  
+  string recipient = 2 [ (gogoproto.moretags) = "yaml:\"sender\"" ];  
+
+      
+  repeated string path = 3 [ (gogoproto.moretags) = "yaml:\"path\"" ];
+
+  repeated string ammounts = 4 [
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false];
+}
+

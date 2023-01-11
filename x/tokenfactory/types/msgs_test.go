@@ -4,14 +4,14 @@ import (
 	fmt "fmt"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	"celestia-app-demo/app"
 	"celestia-app-demo/x/tokenfactory/types"
-
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 // Test authz serialize and de-serializes for tokenfactory msg.

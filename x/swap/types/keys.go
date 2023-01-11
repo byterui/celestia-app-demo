@@ -1,6 +1,10 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 const (
 	// ModuleName defines the module name
@@ -20,12 +24,21 @@ const (
 )
 
 var (
-	// KeyNextGlobalPoolId defines key to store the next Pool ID to be used.
-	KeyNextGlobalPoolId = []byte{0x01}
+	// KeyNextGlobalPairId defines key to store the next Pool ID to be used.
+	KeyNextGlobalPairId = []byte{0x01}
 
 	KeyPrefixPools = []byte{0x02}
+
+	KeyPrefixTokensToPoolId = []byte{0x03}
 )
 
-func GetKeyPrefixPools(poolId uint64) []byte {
+const KeySeparator = "|"
+
+func GetKeyPrefixPairs(poolId uint64) []byte {
 	return append(KeyPrefixPools, sdk.Uint64ToBigEndian(poolId)...)
+}
+
+func GetKeyPrefixTokensToPoolId(token0, token1 string) []byte {
+	tokenPrefix := []byte(strings.Join([]string{token0, token1}, KeySeparator))
+	return append(KeyPrefixTokensToPoolId, tokenPrefix...)
 }
