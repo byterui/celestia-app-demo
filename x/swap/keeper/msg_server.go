@@ -2,6 +2,7 @@ package keeper
 
 import (
 	context "context"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -30,7 +31,7 @@ func (m msgServer) CreatePair(goCtx context.Context, msg *types.MsgCreatePair) (
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.TypeMsgCreatePair,
-			sdk.NewAttribute(types.AttributeCreator, msg.Sender),
+			sdk.NewAttribute(types.AttributeCaller, msg.Sender),
 			sdk.NewAttribute(types.AttributeToken0, pair.Token0.Denom),
 			sdk.NewAttribute(types.AttributeToken0, pair.Token1.Denom),
 			sdk.NewAttribute(types.AttributePairAccount, pair.Account),
@@ -60,7 +61,7 @@ func (m msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.TypeMsgAddLiquidty,
-			sdk.NewAttribute(types.AttributeCreator, msg.Sender),
+			sdk.NewAttribute(types.AttributeCaller, msg.Sender),
 			sdk.NewAttribute(types.AttributeToken0, res.Token0.Denom),
 			sdk.NewAttribute(types.AttributeToken0Amount, res.Token0.Amount.String()),
 			sdk.NewAttribute(types.AttributeToken1, res.Token1.Denom),
@@ -79,6 +80,39 @@ func (m msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 }
 
 // SwapExactTokensForTokens implements types.MsgServer
-func (msgServer) SwapExactTokensForTokens(context.Context, *types.MsgSwapExactTokensForTokens) (*types.MsgSwapExactTokensForTokensResponse, error) {
-	panic("unimplemented")
+func (m msgServer) SwapExactTokensForTokens(goCtx context.Context, msg *types.MsgSwapExactTokensForTokens) (*types.MsgSwapExactTokensForTokensResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	if err != nil {
+		return nil, err
+	}
+
+	amounts, err := m.Keeper.swapExactTokensForTokens(ctx, senderAddr, msg.AmountIn, msg.AmountOutMin, msg.Path, recipient)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.TypeMsgSwapExactTokensForTokens,
+			sdk.NewAttribute(types.AttributeCaller, msg.Sender),
+			sdk.NewAttribute(types.AttributePath, strings.Join(msg.Path, ",")),
+			sdk.NewAttribute(types.AttributeAmountIn, msg.AmountIn.String()),
+			sdk.NewAttribute(types.AttributeAmountOut, amounts[len(amounts)-1].String()),
+			sdk.NewAttribute(types.AttributeRecipient, msg.Recipient),
+		),
+	})
+
+	return &types.MsgSwapExactTokensForTokensResponse{
+		Sender:    msg.Sender,
+		Recipient: msg.Recipient,
+		Path:      msg.Path,
+		Ammounts:  amounts,
+	}, nil
 }

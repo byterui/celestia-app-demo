@@ -1,11 +1,12 @@
 package keeper
 
 import (
-	"celestia-app-demo/x/swap/types"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"celestia-app-demo/x/swap/types"
 )
 
 type addLiqudityResult struct {

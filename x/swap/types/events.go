@@ -2,7 +2,7 @@ package types
 
 // event types
 const (
-	AttributeCreator       = "creator"
+	AttributeCaller        = "caller"
 	AttributeToken0        = "token0"
 	AttributeToken1        = "token1"
 	AttributeToken0Amount  = "token0_amount"
@@ -10,4 +10,8 @@ const (
 	AttributeLPToken       = "lptoken"
 	AttributeLPTokenAmount = "lptoken_amount"
 	AttributePairAccount   = "pair_account"
+	AttributePath          = "path"
+	AttributeAmountIn      = "amount_in"
+	AttributeAmountOut     = "amount_in"
+	AttributeRecipient     = "recipient"
 )
