@@ -26,7 +26,7 @@ func (suite *IntegrationTestSuite) createTestToken(denoms []string) sdk.Coins {
 	return coins
 }
 
-func (suite *IntegrationTestSuite) ATestCreatePairMsg() {
+func (suite *IntegrationTestSuite) TestCreatePairMsg() {
 	coins := suite.createTestToken([]string{"c1", "c2", "c3"})
 	for _, tc := range []struct {
 		desc                 string
@@ -83,7 +83,7 @@ func (suite *IntegrationTestSuite) ATestCreatePairMsg() {
 	}
 }
 
-func (suite *IntegrationTestSuite) ATestAddLiquidityMsg() {
+func (suite *IntegrationTestSuite) TestAddLiquidityMsg() {
 	coins := suite.createTestToken([]string{"a1", "a2", "c3"})
 	ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
 
