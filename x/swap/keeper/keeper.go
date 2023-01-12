@@ -112,7 +112,7 @@ func (k Keeper) GetPoolIdFromTokens(ctx sdk.Context, token0 string, token1 strin
 	return pairId.Value, nil
 }
 
-func (k Keeper) SetIdToPairs(ctx sdk.Context, pairId uint64, pair *types.Pair) {
+func (k Keeper) SetIdToPair(ctx sdk.Context, pairId uint64, pair *types.Pair) {
 	bz, err := k.cdc.Marshal(pair)
 	if err != nil {
 		panic(err)

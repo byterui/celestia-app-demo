@@ -55,9 +55,9 @@ func (k Keeper) addLiquidty(
 		return nil, types.ErrMath
 	}
 
-	pair.Token0.AddAmount(*amount0)
-	pair.Token1.AddAmount(*amount1)
-	pair.LpToken.AddAmount(*mintedLiquidity)
+	pair.Token0 = pair.Token0.AddAmount(*amount0)
+	pair.Token1 = pair.Token1.AddAmount(*amount1)
+	pair.LpToken = pair.LpToken.AddAmount(*mintedLiquidity)
 
 	mintedLiquidityToken := sdk.Coins{sdk.NewCoin(pair.LpToken.Denom, *mintedLiquidity)}
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, mintedLiquidityToken)
@@ -77,7 +77,7 @@ func (k Keeper) addLiquidty(
 	}
 
 	// update pair
-	k.SetIdToPairs(ctx, pairId, pair)
+	k.SetIdToPair(ctx, pairId, pair)
 
 	return &addLiqudityResult{
 		Token0:  &transferTokens[0],

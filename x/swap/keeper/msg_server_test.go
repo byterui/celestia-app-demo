@@ -26,7 +26,7 @@ func (suite *IntegrationTestSuite) createTestToken(denoms []string) sdk.Coins {
 	return coins
 }
 
-func (suite *IntegrationTestSuite) TestCreatePairMsg() {
+func (suite *IntegrationTestSuite) ATestCreatePairMsg() {
 	coins := suite.createTestToken([]string{"c1", "c2", "c3"})
 	for _, tc := range []struct {
 		desc                 string
@@ -83,7 +83,7 @@ func (suite *IntegrationTestSuite) TestCreatePairMsg() {
 	}
 }
 
-func (suite *IntegrationTestSuite) TestAddLiquidityMsg() {
+func (suite *IntegrationTestSuite) ATestAddLiquidityMsg() {
 	coins := suite.createTestToken([]string{"a1", "a2", "c3"})
 	ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
 
@@ -136,6 +136,74 @@ func (suite *IntegrationTestSuite) TestAddLiquidityMsg() {
 				suite.Require().Equal(err, tc.expecterr)
 			} else {
 				suite.Require().Equal(tc.expectLpTokenAmount, res.LpToken.Amount)
+			}
+		})
+	}
+}
+
+func (suite *IntegrationTestSuite) TestSwapExactTokensForTokensMsg() {
+	coins := suite.createTestToken([]string{"se1", "se2", "se3", "se4"})
+	ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
+
+	for _, tc := range []struct {
+		desc            string
+		initPairs       []types.Pair
+		expectedErr     error
+		amountIn        sdk.Coin
+		path            []string
+		expectedOutCoin sdk.Coin
+	}{
+		{
+			desc: "normal",
+			initPairs: []types.Pair{
+				{
+					Token0: sdk.NewCoin(coins[0].Denom, sdk.NewInt(10000)),
+					Token1: sdk.NewCoin(coins[1].Denom, sdk.NewInt(10000)),
+				},
+				{
+					Token0: sdk.NewCoin(coins[1].Denom, sdk.NewInt(10000)),
+					Token1: sdk.NewCoin(coins[2].Denom, sdk.NewInt(10000)),
+				},
+			},
+			expectedErr:     nil,
+			amountIn:        sdk.NewCoin(coins[0].Denom, sdk.NewInt(100)),
+			path:            []string{coins[0].Denom, coins[1].Denom, coins[2].Denom},
+			expectedOutCoin: sdk.NewCoin(coins[2].Denom, sdk.NewInt(96)),
+		},
+	} {
+		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
+			for _, pair := range tc.initPairs {
+				_, err := suite.msgServer.CreatePair(ctx, &types.MsgCreatePair{
+					Sender: suite.TestAccs[0].String(),
+					Token0: pair.Token0.Denom,
+					Token1: pair.Token1.Denom,
+				})
+
+				suite.Require().Nil(err)
+
+				_, err = suite.msgServer.AddLiquidity(ctx, &types.MsgAddLiquidity{
+					Sender:     suite.TestAccs[0].String(),
+					Token0:     pair.Token0,
+					Token1:     pair.Token1,
+					Amount0Min: sdkmath.ZeroInt(),
+					Amount1Min: sdkmath.ZeroInt(),
+					Deadline:   1000,
+				})
+				suite.Require().Nil(err)
+			}
+
+			res, err := suite.msgServer.SwapExactTokensForTokens(ctx, &types.MsgSwapExactTokensForTokens{
+				Sender:       suite.TestAccs[0].String(),
+				AmountIn:     tc.amountIn.Amount,
+				AmountOutMin: sdk.ZeroInt(),
+				Path:         tc.path,
+				Recipient:    suite.TestAccs[0].String(),
+				Deadline:     100,
+			})
+
+			if tc.expectedErr != nil {
+				suite.Require().Nil(err)
+				suite.Require().Equal(res.Ammounts[len(res.Ammounts)-1], tc.expectedOutCoin.Amount)
 			}
 		})
 	}

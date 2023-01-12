@@ -4,17 +4,18 @@ import (
 	"celestia-app-demo/x/swap/types"
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) swapExactTokensForTokens(
 	ctx sdk.Context,
 	sender sdk.AccAddress,
-	amountIn sdk.Int,
-	amountOutMin sdk.Int,
+	amountIn sdkmath.Int,
+	amountOutMin sdkmath.Int,
 	path []string,
 	recipient sdk.AccAddress,
-) ([]sdk.Int, error) {
+) ([]sdkmath.Int, error) {
 	amounts, err := k.getAmountOutByPath(ctx, amountIn, path)
 	if err != nil {
 		return nil, err
@@ -44,19 +45,19 @@ func (k Keeper) swapExactTokensForTokens(
 
 func (k Keeper) getAmountOutByPath(
 	ctx sdk.Context,
-	amountIn sdk.Int,
+	amountIn sdkmath.Int,
 	path []string,
-) ([]sdk.Int, error) {
+) ([]sdkmath.Int, error) {
 	if len(path) <= 1 {
 		return nil, types.ErrInvalidPath
 	}
 
 	pathLastIndex := len(path) - 1
-	outVec := []sdk.Int{amountIn}
+	outVec := []sdkmath.Int{amountIn}
 
 	for i := 0; i < pathLastIndex; i++ {
 		pairAccount, err := k.getPairAccountFromTokens(ctx, path[i], path[i+1])
-		if pairAccount == nil {
+		if pairAccount == nil || err != nil {
 			return nil, types.ErrPairNotExist
 		}
 
@@ -85,12 +86,12 @@ func (k Keeper) getPairIdFromUnsortTokens(ctx sdk.Context, token0 string, token1
 	return k.GetPoolIdFromTokens(ctx, sortedToken0, sortedToken1)
 }
 
-func getAmountOut(amountIn, reserveIn, reserveOut sdk.Int) (sdk.Int, error) {
+func getAmountOut(amountIn, reserveIn, reserveOut sdkmath.Int) (sdkmath.Int, error) {
 	if amountIn.IsZero() || reserveIn.IsZero() || reserveOut.IsZero() {
 		return sdk.ZeroInt(), types.ErrMath
 	}
 
-	inputAmountWithFee := amountIn.ModRaw(997)
+	inputAmountWithFee := amountIn.MulRaw(997)
 
 	numerator := inputAmountWithFee.Mul(reserveOut)
 
@@ -116,7 +117,7 @@ func (k Keeper) getPairAccountFromTokens(ctx sdk.Context, token0 string, token1 
 	return pairAccount, nil
 }
 
-func (k Keeper) swap(ctx sdk.Context, amounts []sdk.Int, path []string, recipient sdk.AccAddress) error {
+func (k Keeper) swap(ctx sdk.Context, amounts []sdkmath.Int, path []string, recipient sdk.AccAddress) error {
 	if len(amounts) != len(path) {
 		return types.ErrInsufficientFunds
 	}
@@ -136,7 +137,7 @@ func (k Keeper) swap(ctx sdk.Context, amounts []sdk.Int, path []string, recipien
 		}
 
 		if i < pathLen-2 {
-			midAccount, err := k.getPairAccountFromTokens(ctx, output, path[i+1])
+			midAccount, err := k.getPairAccountFromTokens(ctx, input, output)
 			if err != nil {
 				return err
 			}
@@ -160,14 +161,21 @@ func (k Keeper) pairSwap(
 	ctx sdk.Context,
 	token0 string,
 	token1 string,
-	amount0 sdk.Int,
-	amount1 sdk.Int,
+	amount0 sdkmath.Int,
+	amount1 sdkmath.Int,
 	recipient sdk.AccAddress,
 ) error {
-	pairAccount, err := k.getPairAccountFromTokens(ctx, token0, token1)
+	id, err := k.getPairIdFromUnsortTokens(ctx, token0, token1)
 	if err != nil {
 		return err
 	}
+
+	pair := k.GetPairFromId(ctx, id)
+	if pair == nil {
+		return types.ErrPairNotExist
+	}
+
+	pairAccount := sdk.MustAccAddressFromBech32(pair.Account)
 
 	reserve0 := k.bankKeeper.GetBalance(ctx, pairAccount, token0)
 	reserve1 := k.bankKeeper.GetBalance(ctx, pairAccount, token1)
@@ -188,6 +196,16 @@ func (k Keeper) pairSwap(
 			return err
 		}
 	}
+
+	if pair.Token0.Denom == token0 {
+		pair.Token0.SubAmount(amount0)
+		pair.Token1.SubAmount(amount1)
+	} else {
+		pair.Token0.SubAmount(amount1)
+		pair.Token1.SubAmount(amount0)
+	}
+
+	k.SetIdToPair(ctx, id, pair)
 
 	return nil
 }

@@ -41,7 +41,7 @@ func (k Keeper) createPair(ctx sdk.Context, token0, token1 string) (*types.Pair,
 		Display: pair.LpToken.Denom,
 	})
 
-	k.SetIdToPairs(ctx, pairId, pair)
+	k.SetIdToPair(ctx, pairId, pair)
 
 	k.SetTokensToPoolId(ctx, pair.Token0.Denom, pair.Token1.Denom, pairId)
 
