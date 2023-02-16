@@ -151,14 +151,14 @@ var (
 		auth.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
 		genutil.AppModuleBasic{},
-		bank.AppModuleBasic{},
+		bankModule{},
 		capability.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		mint.AppModuleBasic{},
+		stakingModule{},
+		mintModule{},
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
-		crisis.AppModuleBasic{},
+		crisisModule{},
 		slashing.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		groupmodule.AppModuleBasic{},
@@ -183,7 +183,7 @@ var (
 		govtypes.ModuleName:                {authtypes.Burner},
 		ibctransfertypes.ModuleName:        {authtypes.Minter, authtypes.Burner},
 		tokenfactorymoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		swapmoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner},
+		swapmoduletypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
 	}
 )
 

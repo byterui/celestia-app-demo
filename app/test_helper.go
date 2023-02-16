@@ -357,7 +357,7 @@ func AddTestAddrsIncremental(app *App, ctx sdk.Context, accNum int, accAmt math.
 func addTestAddrs(app *App, ctx sdk.Context, accNum int, accAmt math.Int, strategy GenerateAccountStrategy) []sdk.AccAddress {
 	testAddrs := strategy(accNum)
 
-	initCoins := sdk.NewCoins(sdk.NewCoin(params.HumanCoinUnit, accAmt))
+	initCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, accAmt))
 
 	for _, addr := range testAddrs {
 		initAccountWithCoins(app, ctx, addr, initCoins)

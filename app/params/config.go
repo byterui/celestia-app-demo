@@ -8,10 +8,7 @@ import (
 )
 
 const (
-	HumanCoinUnit = "demo"
-	OsmoExponent  = 6
-
-	DefaultBondDenom = HumanCoinUnit
+	DefaultBondDenom = "demo"
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address.
 	Bech32PrefixAccAddr = "demo"
@@ -37,7 +34,7 @@ func init() {
 
 // RegisterDenoms registers token denoms.
 func RegisterDenoms() {
-	err := sdk.RegisterDenom(HumanCoinUnit, sdk.OneDec())
+	err := sdk.RegisterDenom(DefaultBondDenom, sdk.OneDec())
 	if err != nil {
 		panic(err)
 	}
